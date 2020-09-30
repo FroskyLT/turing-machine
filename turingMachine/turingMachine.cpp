@@ -27,30 +27,29 @@ public:
 		this->initialInput = initialInput;
 		this->code = code;
 	}
-	void simulate_machine();
+	void simulate_machine(SHORT x = 1, SHORT y = 10);
 	bool find_state(vector <string> el, string state, char head) {
 		if (el[0] == state && el[1][0] == head) return true;
 		else return false;
 	}
 };
 
-void turingMachine::simulate_machine()
+void turingMachine::simulate_machine(SHORT x, SHORT y)
 {
 	int index = pos;
 	string tape = initialInput, newState = code[0][4];
 
 	tape.push_back(' ');
 	tape.insert(tape.begin(), ' ');
-									// it[0] - currentState
-	char head = tape[index];		// it[1] - currentSym
-									// it[2] - newSym
-	bool run = true;				// it[3] - direction
-	int turn = 0;					// it[4] - newState
+										// it[0] - currentState
+	char head = tape[index];			// it[1] - currentSym
+										// it[2] - newSym
+	bool run = true;					// it[3] - direction
+	int turn = 0;						// it[4] - newState
 	while (run)
 	{
 		bool found = false;
 		turn++;
-
 		for (auto it : code)
 		{
 			if (find_state(it, newState, head))
@@ -58,17 +57,22 @@ void turingMachine::simulate_machine()
 
 				if (tape[index] != it[2][0])
 				{
+					mtx.lock();
+
 					tape[index] = it[2][0];
-					//system("CLS");
-					//cout << "\033[2J\033[1;1H";
+					SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { x, y });
 					cout << tape << "\n";
-					//Sleep(100);
+
+					mtx.unlock();
+					Sleep(50);
 				}
 
 				if (it[3] == "R" && index != tape.size() - 1)	index++;
 				else if (it[3] == "L" && index != 0)			index--;
 				else
 				{
+					SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { x, y });
+					printf("%c[2K", 27);
 					cout << "\n" << "error out of range " << index << "\n" << endl;
 					run = false;
 				}
@@ -77,21 +81,18 @@ void turingMachine::simulate_machine()
 				found = true;
 				newState = it[4];
 
-				//cout << "next: " << it[0] << " " << it[1] << " " << it[2] << " " << it[3] << " " << it[4] << "\n" << endl;
-				//cout << tape << " " << "turn: " << turn << " index: " << index << " " << head << "\n";
-				//cout << "pervious: "<< it[0] << " " << it[1] << " " << it[2] << " " << it[3] << " " << it[4] << endl;
-
 				break;
 			}
 		}
 		if (!found) {
 			run = 0;
+			mtx.lock();
+			SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { x, y });
+			printf("%c[2K", 27); 
 			cout << "Halted. No rule for state " << newState << " and symbol " << head << ".\n"<<"\n";
+			mtx.unlock();
 		}
-		if (GetAsyncKeyState(VK_UP) & 0x8000) // the 'Up' arrow key is currently being held down
-		{
-			exit(0);
-		}
+		if (GetAsyncKeyState(VK_UP) & 0x8000) run = 0;		// the 'Up' arrow key is currently being held down
 	}
 }
 
@@ -185,33 +186,14 @@ public:
 };
 
 
-void firstF(D1 d1)	{ mtx.lock(); d1.simulate_machine(); mtx.unlock(); }
-void secondF(D2 d2) { mtx.lock(); d2.simulate_machine(); mtx.unlock(); }
-void thirdF(D3 d3)	{ mtx.lock(); d3.simulate_machine(); mtx.unlock(); }
-void fourthF(D4 d4) { mtx.lock(); d4.simulate_machine(); mtx.unlock(); }
-
-int hotKey() {
-	if (RegisterHotKey(NULL, 1, MOD_SHIFT, 0x52)) // SHIFT + R
-	{
-		cout << "Made hotkey";
-	}
-	MSG msg = { 0 };
-	while (GetMessage(&msg, NULL, 0, 0) != 0)
-	{
-		if (msg.message == WM_HOTKEY)
-		{
-			return 0;
-		}
-	}
-}
-
-int main()
-{
+void firstF(D1 d1)	{ d1.simulate_machine(1, 10); }
+void secondF(D2 d2) { d2.simulate_machine(1, 11); }
+void thirdF(D3 d3)	{ d3.simulate_machine(1, 12); }
+void fourthF(D4 d4) { d4.simulate_machine(1, 13); }
+void allF() {
 	D1 d1; D2 d2; D3 d3; D4 d4;
 	d1.input_values(); d2.input_values();
 	d3.input_values(); d4.input_values();
-
-	//thread first ( d1.simulate_machine);
 
 	thread first	(firstF, d1);
 	thread second	(secondF, d2);
@@ -222,6 +204,47 @@ int main()
 	second.join();
 	third.join();
 	fourth.join();
+}
+
+
+int main()
+{
+	D1 d1; D2 d2; D3 d3; D4 d4;
+	d1.input_values(); d2.input_values();
+	d3.input_values(); d4.input_values();
+	while (true)
+	{
+		system("CLS");
+		cout << "________Turing simulator_________" << endl;
+		cout << "Choose which file you want start:" << endl;
+		cout << "1) 1.txt"							<< endl;
+		cout << "2) 2.txt"							<< endl;
+		cout << "3) 3.txt"							<< endl;
+		cout << "4) 4.txt"							<< endl;
+		cout << "5) All together"					<< endl;
+		cout << "6) Exit"							<< endl;
+		cout << "_________________________________" << endl;
+
+		int x;
+		SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), { 0, 9 });
+		cin >> x;
+
+		switch (x)
+		{
+		case 1: d1.simulate_machine(); break;
+		case 2: d2.simulate_machine(); break;
+		case 3: d3.simulate_machine(); break;
+		case 4: d4.simulate_machine(); break;
+		case 5:	 allF();			   break;
+		case 6:	 exit(0);			   break;
+		default: cout << "incorrect value\n"; exit(0);
+		}
+
+		cout << "Wait a second..";
+		Sleep(3000);
+	}
 
 	return 0;
 }
+
+//raylib SetConsoleCursorPosition

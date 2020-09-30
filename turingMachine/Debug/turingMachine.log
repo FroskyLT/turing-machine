@@ -1,3 +1,2 @@
 ﻿  turingMachine.cpp
-C:\Users\David\Desktop\code\visualstudiodarbai\turingMachine\turingMachine\turingMachine.cpp(206): warning C4715: 'hotKey': not all control paths return a value
-  turingMachine.vcxproj -> C:\Users\David\Desktop\code\visualstudiodarbai\turingMachine\Debug\turingMachine.exe
+  turingMachine.vcxproj -> D:\code\projects\VS projects\TuringMachine\Debug\turingMachine.exe
