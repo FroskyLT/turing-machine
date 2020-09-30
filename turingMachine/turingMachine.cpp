@@ -5,7 +5,6 @@
 #include <thread>
 #include <windows.h>
 #include <mutex>
-#include <stdlib.h>
 
 using namespace std;
 
